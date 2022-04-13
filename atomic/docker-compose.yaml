@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+
+   atomic:
+     image: "brobridgehub/atomic:v0.0.5"
+     restart: always
+     hostname: atomic
+     #user: root:root
+     environment:
+     - ATOMIC_PUBLISH_COMMAND=cd /data/atomic && git add . && git commit -m "updated by atomic" && git push
+     ports:
+       - "1880:1880"
+     volumes:
+       #- /tmp/data:/data
+       - ${PWD}/data:/data

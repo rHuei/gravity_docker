@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+
+   oracle-xe-11g-r2:
+     image: "wnameless/oracle-xe-11g-r2"
+     ports:
+       - "1521:1521"
+     environment:
+       - ORACLE_ALLOW_REMOTE=true
+       - ORACLE_DISABLE_ASYNCH_IO=true
+       - ORACLE_ENABLE_XDB=true
+     volumes:
+       - ${PWD}/oracle_init1.sql:/docker-entrypoint-initdb.d/init.sql
+         #- /tmp/test.sql:/tmp/test.sql
+

@@ -1,0 +1,170 @@
+version: '3'
+
+services:
+
+   mongodb:
+     image: "mongo:4.2-bionic"
+     ports:
+       - "27017:27017"
+
+   internal-nats-server:
+     image: "nats:2.2.6"
+     restart: always
+     expose:
+     - "4222"
+     ports:
+       - "4222:4222"
+
+   gravity-controller:
+     image: "brobridgehub/gravity-controller:v2.1.0"
+     hostname: gravity-controller
+     restart: always
+     environment:
+     - GRAVITY_CONTROLLER_GRAVITY_HOST=host.docker.internal
+     - GRAVITY_CONTROLLER_GRAVITY_PORT=4222
+     deploy:
+       resources:
+         limits:
+           cpus: "0.5"
+           memory: 500M
+     depends_on:
+     - "internal-nats-server"
+
+   gravity-synchronizer:
+     image: "brobridgehub/gravity-synchronizer:v4.2.1"
+     restart: always
+     hostname: gravity-synchronizer
+     environment:
+       GRAVITY_SYNCHRONIZER_GRAVITY_HOST: host.docker.internal
+       GRAVITY_SYNCHRONIZER_GRAVITY_PORT: 4222
+       GRAVITY_SYNCHRONIZER_COLLECTION_SETTINGS: |
+         {
+           "collections": {
+             "rowData": {
+               "schema": {
+                 "ID": { "type": "string" },
+                 "NAME": { "type": "string" },
+                 "PHONE": { "type": "string" }
+               }
+             }
+           }
+         }
+       GRAVITY_SYNCHRONIZER_RULES_SETTINGS: |
+         {      
+          "rules": [   
+            {  
+              "event": "rowInitialize",
+              "collection": "rowData",
+              "method": "insert",
+              "primaryKey": "ID",
+              "schema": {
+                "ID": { "type": "string" },
+                "NAME": { "type": "string" },
+                "PHONE": { "type": "string" }
+              },
+              "handler": {
+                "script": "return { ID: source.ID, NAME: source.NAME, PHONE: source.PHONE }"
+              }
+            }, 
+            {  
+              "event": "rowCreate",
+              "collection": "rowData",
+              "method": "insert",
+              "primaryKey": "ID",
+              "schema": {
+                "ID": { "type": "string" },
+                "NAME": { "type": "string" },
+                "PHONE": { "type": "string" }
+              },
+              "handler": {
+                "script": "return { ID: source.ID, NAME: source.NAME, PHONE: source.PHONE }"
+              }
+            }, 
+            {  
+              "event": "rowUpdate",
+              "collection": "rowData",
+              "method": "update",
+              "primaryKey": "ID",
+              "schema": {
+                "ID": { "type": "string" },
+                "NAME": { "type": "string" },
+                "PHONE": { "type": "string" }
+              },
+              "handler": {
+                "script": "return { ID: source.ID, NAME: source.NAME, PHONE: source.PHONE }"
+              }
+            }, 
+            {  
+              "event": "rowDelete",
+              "collection": "rowData",
+              "method": "delete",
+              "primaryKey": "ID",
+              "handler": {
+                "script": "return { ID: source.ID }"
+              }
+            }  
+          ]    
+         }
+#     deploy:
+#       resources:
+#         limits:
+#           cpus: "0.5"
+#           memory: 500M
+     depends_on:
+     - "gravity-controller"
+     - "internal-nats-server"
+
+   gravity-transmitter-mongodb:
+     image: "brobridgehub/gravity-transmitter-mongodb:v2.3.0"
+     hostname: gravity-transmitter-mongodb
+     restart: always
+     environment:
+       GRAVITY_TRANSMITTER_MONGODB_GRAVITY_HOST: host.docker.internal:4222
+       GRAVITY_TRANSMITTER_MONGODB_MONGODB_DBNAME: "gravity"
+       GRAVITY_TRANSMITTER_MONGODB_MONGODB_URI: "mongodb://mongodb:27017"
+       GRAVITY_TRANSMITTER_MONGODB_SUBSCRIPTION_SETTINGS: |  
+         {                
+                "subscriptions": {
+                        "rowData": [
+                                "gravity_vt"
+                        ]
+                }        
+         }
+     depends_on:
+     - "gravity-synchronizer"
+     - "mongodb"
+
+   gravity-adapter-oracle:
+     image: "hb.k8sbridge.com/gravity/gravity-adapter-oracle:v3.2.0"
+     restart: always
+     hostname: gravity-adapter-oracle
+     environment:
+       GRAVITY_ADAPTER_ORACLE_GRAVITY_HOST: host.docker.internal
+       GRAVITY_ADAPTER_ORACLE_GRAVITY_PORT: 4222
+       GRAVITY_ADAPTER_ORACLE_SOURCE_SETTINGS: |
+         {
+              "sources": {
+                      "oracle_example": {
+                              "disabled": false,
+                              "host": "host.docker.internal",
+                              "port": 1521,
+                              "username": "logminer",
+                              "password": "logminer",
+                              "dbname": "XE",
+                              "mode": "logminer",
+                              "initialLoad": true,
+                              "tables": {
+                                      "gravity.users":{
+                                              "events": {
+                                                      "snapshot": "rowInitialize",
+                                                      "create": "rowCreate",
+                                                      "update": "rowUpdate",
+                                                      "delete": "rowDelete"
+                                              }
+                                      }
+                              }
+                      }
+              }
+         }
+     depends_on:
+     - "gravity-synchronizer"
