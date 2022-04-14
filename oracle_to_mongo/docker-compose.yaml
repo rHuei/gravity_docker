@@ -20,7 +20,7 @@ services:
      hostname: gravity-controller
      restart: always
      environment:
-     - GRAVITY_CONTROLLER_GRAVITY_HOST=host.docker.internal
+     - GRAVITY_CONTROLLER_GRAVITY_HOST=172.17.0.1
      - GRAVITY_CONTROLLER_GRAVITY_PORT=4222
      deploy:
        resources:
@@ -35,7 +35,7 @@ services:
      restart: always
      hostname: gravity-synchronizer
      environment:
-       GRAVITY_SYNCHRONIZER_GRAVITY_HOST: host.docker.internal
+       GRAVITY_SYNCHRONIZER_GRAVITY_HOST: 172.17.0.1
        GRAVITY_SYNCHRONIZER_GRAVITY_PORT: 4222
        GRAVITY_SYNCHRONIZER_COLLECTION_SETTINGS: |
          {
@@ -119,7 +119,7 @@ services:
      hostname: gravity-transmitter-mongodb
      restart: always
      environment:
-       GRAVITY_TRANSMITTER_MONGODB_GRAVITY_HOST: host.docker.internal:4222
+       GRAVITY_TRANSMITTER_MONGODB_GRAVITY_HOST: 172.17.0.1:4222
        GRAVITY_TRANSMITTER_MONGODB_MONGODB_DBNAME: "gravity"
        GRAVITY_TRANSMITTER_MONGODB_MONGODB_URI: "mongodb://mongodb:27017"
        GRAVITY_TRANSMITTER_MONGODB_SUBSCRIPTION_SETTINGS: |  
@@ -139,14 +139,14 @@ services:
      restart: always
      hostname: gravity-adapter-oracle
      environment:
-       GRAVITY_ADAPTER_ORACLE_GRAVITY_HOST: host.docker.internal
+       GRAVITY_ADAPTER_ORACLE_GRAVITY_HOST: 172.17.0.1
        GRAVITY_ADAPTER_ORACLE_GRAVITY_PORT: 4222
        GRAVITY_ADAPTER_ORACLE_SOURCE_SETTINGS: |
          {
               "sources": {
                       "oracle_example": {
                               "disabled": false,
-                              "host": "host.docker.internal",
+                              "host": "172.17.0.1",
                               "port": 1521,
                               "username": "logminer",
                               "password": "logminer",

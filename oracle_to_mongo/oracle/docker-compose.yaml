@@ -11,6 +11,6 @@ services:
        - ORACLE_DISABLE_ASYNCH_IO=true
        - ORACLE_ENABLE_XDB=true
      volumes:
-       - ${PWD}/oracle_init1.sql:/docker-entrypoint-initdb.d/init.sql
+       - ${PWD}/oracle_init.sql:/docker-entrypoint-initdb.d/init.sql
          #- /tmp/test.sql:/tmp/test.sql
 

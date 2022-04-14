@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+   gravity-adapter-rest:
+     image: "brobridgehub/gravity-adapter-rest:v3.1.0"
+     hostname: gravity-adapter-rest
+     restart: always
+     ports:
+     - "8080:8080"
+     environment:
+
+       # GRAVIRT 的連線資訊
+       GRAVITY_ADAPTER_REST_GRAVITY_HOST: 172.17.0.1
+       GRAVITY_ADAPTER_REST_GRAVITY_PORT: 4222
+
+       # 資料源設定
+       GRAVITY_ADAPTER_REST_SOURCE_SETTINGS: |  
+        {
+          "sources": {
+            "myAPI": {
+              "uri": "/dataInput"
+            }
+          }
+        }

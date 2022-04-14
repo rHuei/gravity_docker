@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+   gravity-adapter-kafka:
+     image: "brobridgehub/gravity-adapter-kafka:v3.1.0"
+     hostname: gravity-adapter-kafka
+     restart: always
+     environment:
+       # GRAVIRT 的連線資訊
+       GRAVITY_ADAPTER_KAFKA_GRAVITY_HOST: 172.17.0.1
+       GRAVITY_ADAPTER_KAFKA_GRAVITY_PORT: 4222
+
+       # 資料源設定
+       GRAVITY_ADAPTER_KAFKA_SOURCE_SETTINGS: |  
+        {
+          "sources": {
+            "kafka_server": {
+              "hosts": ["172.17.0.1:9093"],
+              "topic": "gravity",
+              "groupId": "my_group"
+            }
+          }
+        }

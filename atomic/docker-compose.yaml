@@ -12,5 +12,5 @@ services:
      ports:
        - "1880:1880"
      volumes:
-       #- /tmp/data:/data
-       - ${PWD}/data:/data
+       - /tmp/data:/data
+       #- ${PWD}/data:/data
